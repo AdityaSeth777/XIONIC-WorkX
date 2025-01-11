@@ -7,7 +7,7 @@ import { CreateProject } from './pages/CreateProject';
 import { Profile } from './pages/Profile';
 import { WalletProvider } from './context/WalletContext';
 
-function App() {
+export default function App() {
   return (
     <WalletProvider>
       <Router>
