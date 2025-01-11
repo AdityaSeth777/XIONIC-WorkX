@@ -44,6 +44,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // Listen for account changes
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', () => {
@@ -53,6 +54,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         window.location.reload();
       });
     }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', connect);
+        window.ethereum.removeListener('chainChanged', () => {
+          window.location.reload();
+        });
+      }
+    };
   }, []);
 
   return (
