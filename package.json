@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "wasm:build": "wasm-pack build contracts/xion-marketplace --target web"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.32.3",
@@ -35,9 +34,6 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2",
-    "vite-plugin-top-level-await": "^1.4.4",
-    "vite-plugin-wasm": "^3.4.1",
-    "wasm-pack": "^0.12.1"
+    "vite": "^5.4.2"
   }
 }
