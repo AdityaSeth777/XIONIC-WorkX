@@ -8,20 +8,58 @@
 }
 
 .custom-cursor {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #3B82F6;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
   position: fixed;
   pointer-events: none;
   z-index: 9999;
-  transition: transform 0.2s ease;
-  transform-origin: center center;
+  mix-blend-mode: difference;
 }
 
-.custom-cursor.hover {
-  transform: scale(1.5);
-  background-color: rgba(59, 130, 246, 0.1);
+.custom-cursor::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #3B82F6;
+  border-radius: 50%;
+  animation: pulseRing 2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.custom-cursor::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #3B82F6;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseCore 2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.custom-cursor.hover::before {
+  animation: pulseRingHover 1s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.7); opacity: 0.5; }
+  50% { transform: scale(1); opacity: 0.2; }
+  100% { transform: scale(0.7); opacity: 0.5; }
+}
+
+@keyframes pulseCore {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.5); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes pulseRingHover {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.2; }
+  100% { transform: scale(1); opacity: 0.5; }
 }
 
 /* Preloader */
@@ -40,35 +78,40 @@
 
 .preloader-content {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
 }
 
-.preloader-circle {
+.preloader-hexagon {
   position: absolute;
   width: 100%;
   height: 100%;
-  border: 4px solid transparent;
-  border-radius: 50%;
-  border-top-color: #3B82F6;
-  animation: spin 1s cubic-bezier(0.17, 0.67, 0.83, 0.67) infinite;
+  background: conic-gradient(from 0deg at 50% 50%, #3B82F6 0%, transparent 60%);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation: rotateHex 2s linear infinite;
 }
 
-.preloader-circle:nth-child(2) {
-  border-top-color: #8B5CF6;
-  animation-delay: 0.2s;
-  scale: 0.8;
+.preloader-inner {
+  position: absolute;
+  inset: 20px;
+  background: #111827;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
-.preloader-circle:nth-child(3) {
-  border-top-color: #EC4899;
-  animation-delay: 0.4s;
-  scale: 0.6;
+.preloader-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3B82F6;
+  white-space: nowrap;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes rotateHex {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @layer base {

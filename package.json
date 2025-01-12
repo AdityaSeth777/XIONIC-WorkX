@@ -14,6 +14,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "@supabase/supabase-js": "^2.39.7",
+    "@keplr-wallet/types": "^0.12.76",
+    "@cosmjs/cosmwasm-stargate": "^0.32.3",
     "ethers": "^6.11.1",
     "react-router-dom": "^6.22.2",
     "clsx": "^2.1.0",
