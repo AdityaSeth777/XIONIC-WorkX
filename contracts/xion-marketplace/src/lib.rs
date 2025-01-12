@@ -1,58 +1,35 @@
-use wasm_bindgen::prelude::*;
-use serde::{Serialize, Deserialize};
-use xion_sdk::{Account, Transaction, XionClient};
+use cosmwasm_std::entry_point;
+use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
-#[derive(Serialize, Deserialize)]
-pub struct PaymentDetails {
-    pub to: String,
-    pub amount: String,
-    pub memo: String,
+mod contract;
+mod error;
+mod escrow;
+mod msg;
+mod state;
+
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+
+#[entry_point]
+pub fn instantiate(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    msg: InstantiateMsg,
+) -> StdResult<Response> {
+    contract::instantiate(deps, env, info, msg)
 }
 
-#[wasm_bindgen]
-pub struct XionMarketplace {
-    client: XionClient,
+#[entry_point]
+pub fn execute(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    msg: ExecuteMsg,
+) -> StdResult<Response> {
+    contract::execute(deps, env, info, msg)
 }
 
-#[wasm_bindgen]
-impl XionMarketplace {
-    #[wasm_bindgen(constructor)]
-    pub fn new(rpc_url: &str) -> Self {
-        let client = XionClient::new(rpc_url);
-        Self { client }
-    }
-
-    #[wasm_bindgen]
-    pub async fn send_payment(&self, details: JsValue) -> Result<JsValue, JsValue> {
-        let payment: PaymentDetails = serde_wasm_bindgen::from_value(details)?;
-        
-        let tx = Transaction::new()
-            .with_send(
-                &payment.to,
-                &payment.amount,
-                "uxion",
-            )
-            .with_memo(&payment.memo);
-
-        let result = self.client
-            .broadcast_tx(tx)
-            .await
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
-
-        Ok(serde_wasm_bindgen::to_value(&result)?)
-    }
-
-    #[wasm_bindgen]
-    pub async fn create_meta_account(&self, name: &str) -> Result<JsValue, JsValue> {
-        let account = Account::new()
-            .with_name(name)
-            .with_module("marketplace");
-
-        let result = self.client
-            .create_account(account)
-            .await
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
-
-        Ok(serde_wasm_bindgen::to_value(&result)?)
-    }
+#[entry_point]
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
+    contract::query(deps, env, msg)
 }

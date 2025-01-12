@@ -7,9 +7,10 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2"
+cosmwasm-std = "1.5.0"
+cosmwasm-schema = "1.5.0"
+schemars = "0.8.16"
 serde = { version = "1.0", features = ["derive"] }
-serde-wasm-bindgen = "0.6"
-js-sys = "0.3"
-web-sys = { version = "0.3", features = ["console"] }
-xion-sdk = { git = "https://github.com/burnt-labs/xion.git" }
+thiserror = "1.0"
+cw-storage-plus = "1.1.0"
+cw2 = "1.1.1"

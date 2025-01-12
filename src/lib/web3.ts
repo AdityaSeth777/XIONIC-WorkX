@@ -8,7 +8,7 @@ declare global {
 const XION_CHAIN_ID = "xion-testnet-1";
 const XION_RPC = "https://testnet-rpc.xion-api.burnt.com";
 
-const getKeplr = async () => {
+export const getKeplr = async () => {
   if (!window.keplr) {
     throw new Error("Keplr wallet not found! Please install Keplr extension.");
   }
@@ -56,4 +56,33 @@ const getKeplr = async () => {
   });
 
   return window.keplr;
+};
+
+export const connectWallet = async () => {
+  try {
+    const keplr = await getKeplr();
+    await keplr.enable(XION_CHAIN_ID);
+    
+    const offlineSigner = window.keplr.getOfflineSigner(XION_CHAIN_ID);
+    const accounts = await offlineSigner.getAccounts();
+    const address = accounts[0].address;
+    
+    // Create CosmWasm client
+    const client = await SigningCosmWasmClient.connectWithSigner(
+      XION_RPC,
+      offlineSigner
+    );
+    
+    // Get balance
+    const balance = await client.getBalance(address, "uxion");
+    
+    return {
+      address,
+      balance: (parseInt(balance.amount) / 1000000).toString(), // Convert from uxion to XION
+      signer: offlineSigner
+    };
+  } catch (error) {
+    console.error('Error connecting to Keplr:', error);
+    throw error;
+  }
 };
