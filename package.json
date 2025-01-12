@@ -7,18 +7,18 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "wasm:build": "wasm-pack build contracts/xion-marketplace --target web"
   },
   "dependencies": {
+    "@cosmjs/cosmwasm-stargate": "^0.32.3",
+    "@keplr-wallet/types": "^0.12.76",
+    "@supabase/supabase-js": "^2.39.7",
+    "clsx": "^2.1.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@supabase/supabase-js": "^2.39.7",
-    "@keplr-wallet/types": "^0.12.76",
-    "@cosmjs/cosmwasm-stargate": "^0.32.3",
-    "ethers": "^6.11.1",
     "react-router-dom": "^6.22.2",
-    "clsx": "^2.1.0",
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
@@ -35,6 +35,9 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "vite": "^5.4.2",
+    "vite-plugin-top-level-await": "^1.4.4",
+    "vite-plugin-wasm": "^3.4.1",
+    "wasm-pack": "^0.12.1"
   }
 }

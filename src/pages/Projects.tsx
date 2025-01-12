@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Search, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useWallet } from '../context/WalletContext';
+import { PaymentModal } from '../components/PaymentModal';
 import type { Project } from '../lib/types';
-import { sendPayment } from '../lib/web3';
 
 export function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const { wallet } = useWallet();
 
   useEffect(() => {
@@ -32,31 +33,12 @@ export function Projects() {
     }
   };
 
-  const handleApply = async (project: Project) => {
+  const handleApply = (project: Project) => {
     if (!wallet.address) {
       alert('Please connect your wallet first');
       return;
     }
-
-    try {
-      await sendPayment(project.client_address, project.budget.toString());
-      
-      const { error } = await supabase
-        .from('projects')
-        .update({
-          freelancer_address: wallet.address,
-          status: 'in_progress'
-        })
-        .eq('id', project.id);
-
-      if (error) throw error;
-      
-      alert('Successfully applied and sent payment!');
-      loadProjects();
-    } catch (error) {
-      console.error('Error applying to project:', error);
-      alert('Failed to apply to project');
-    }
+    setSelectedProject(project);
   };
 
   const filteredProjects = projects.filter(project =>
@@ -111,7 +93,7 @@ export function Projects() {
                     className="btn btn-primary mt-4 flex items-center gap-2"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Apply
+                    Apply & Pay
                   </button>
                 )}
               </div>
@@ -125,6 +107,16 @@ export function Projects() {
           </div>
         )}
       </div>
+
+      {selectedProject && (
+        <PaymentModal
+          isOpen={true}
+          onClose={() => setSelectedProject(null)}
+          recipientAddress={selectedProject.client_address}
+          amount={selectedProject.budget.toString()}
+          projectTitle={selectedProject.title}
+        />
+      )}
     </div>
   );
 }
