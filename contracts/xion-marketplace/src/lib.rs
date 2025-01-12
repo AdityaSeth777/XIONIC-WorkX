@@ -8,6 +8,7 @@ mod msg;
 mod state;
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::error::ContractError;
 
 #[entry_point]
 pub fn instantiate(
@@ -25,7 +26,7 @@ pub fn execute(
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     contract::execute(deps, env, info, msg)
 }
 

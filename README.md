@@ -29,17 +29,28 @@ cd contracts/xion-marketplace
 cargo build --target wasm32-unknown-unknown --release
 ```
 
-3. Deploy contracts using the XION CLI:
+3. Set up XION CLI and deploy:
 ```bash
 # Install XION CLI
 curl -L https://raw.githubusercontent.com/burnt-labs/xion/main/scripts/install.sh | bash
 
-# Configure CLI
+# Configure CLI for testnet
 xiond config chain-id xion-testnet-1
-xiond config node https://testnet-rpc.xion-api.burnt.com
+xiond config node https://testnet-rpc.xion-api.burnt.com:443
+xiond config broadcast-mode block
+xiond config output json
 
-# Deploy contract
-xiond tx wasm store ./target/wasm32-unknown-unknown/release/xion_marketplace.wasm --from your-key-name --gas-prices 0.025uxion --gas auto --gas-adjustment 1.3 -y
+# Add your key to the keyring (replace KEY_NAME with your preferred name)
+# Use the same mnemonic as your Keplr wallet to ensure access to your funds
+xiond keys add KEY_NAME --recover
+
+# Deploy contract (replace KEY_NAME with the name you used above)
+xiond tx wasm store ./target/wasm32-unknown-unknown/release/xion_marketplace.wasm \
+  --from KEY_NAME \
+  --gas-prices 0.025uxion \
+  --gas auto \
+  --gas-adjustment 1.3 \
+  -y
 ```
 
 ## Development Setup
@@ -132,6 +143,14 @@ let release_msg = ExecuteMsg::ReleasePayment {};
 ## Network Configuration
 
 The application connects to XION Testnet with these endpoints:
-- RPC: https://testnet-rpc.xion-api.burnt.com
+- RPC: https://testnet-rpc.xion-api.burnt.com:443
 - REST: https://testnet-api.xion-api.burnt.com
 - Chain ID: xion-testnet-1
+
+## Troubleshooting
+
+If you encounter connection issues:
+1. Ensure you're using the correct RPC endpoint with port 443
+2. Check that your key is properly imported and has funds
+3. Verify the chain-id matches the testnet
+4. Make sure the gas prices are set correctly

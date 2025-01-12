@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
-    Uint128, WasmMsg, CosmosMsg, BankMsg, coins,
+    to_json_binary, DepsMut, Env, MessageInfo, Response, StdResult, StdError,
+    Uint128, CosmosMsg, BankMsg, coins,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -31,7 +31,7 @@ pub enum ExecuteMsg {
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     let state = State {
@@ -40,7 +40,7 @@ pub fn instantiate(
         amount: msg.amount,
         is_completed: false,
     };
-    deps.storage.set(b"state", &to_binary(&state)?);
+    deps.storage.set(b"state", &to_json_binary(&state)?);
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
@@ -63,18 +63,24 @@ pub fn execute(
 }
 
 fn execute_complete_work(deps: DepsMut, _env: Env, info: MessageInfo) -> StdResult<Response> {
-    let mut state: State = deps.storage.get(b"state")?.parse_into()?;
+    let state_bytes = deps.storage.get(b"state")
+        .ok_or_else(|| StdError::not_found("State not found"))?;
+    let mut state: State = from_slice(&state_bytes)?;
+    
     if info.sender.to_string() != state.freelancer {
         return Err(StdError::generic_err("Only freelancer can mark work as complete"));
     }
     state.is_completed = true;
-    deps.storage.set(b"state", &to_binary(&state)?);
+    deps.storage.set(b"state", &to_json_binary(&state)?);
 
     Ok(Response::new().add_attribute("method", "complete_work"))
 }
 
-fn execute_release_payment(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
-    let state: State = deps.storage.get(b"state")?.parse_into()?;
+fn execute_release_payment(deps: DepsMut, _env: Env, info: MessageInfo) -> StdResult<Response> {
+    let state_bytes = deps.storage.get(b"state")
+        .ok_or_else(|| StdError::not_found("State not found"))?;
+    let state: State = from_slice(&state_bytes)?;
+    
     if info.sender.to_string() != state.client {
         return Err(StdError::generic_err("Only client can release payment"));
     }
@@ -94,7 +100,10 @@ fn execute_release_payment(deps: DepsMut, env: Env, info: MessageInfo) -> StdRes
 }
 
 fn execute_dispute(deps: DepsMut, _env: Env, info: MessageInfo) -> StdResult<Response> {
-    let state: State = deps.storage.get(b"state")?.parse_into()?;
+    let state_bytes = deps.storage.get(b"state")
+        .ok_or_else(|| StdError::not_found("State not found"))?;
+    let state: State = from_slice(&state_bytes)?;
+    
     if info.sender.to_string() != state.client && info.sender.to_string() != state.freelancer {
         return Err(StdError::generic_err("Only client or freelancer can raise a dispute"));
     }
@@ -102,4 +111,9 @@ fn execute_dispute(deps: DepsMut, _env: Env, info: MessageInfo) -> StdResult<Res
     Ok(Response::new()
         .add_attribute("method", "dispute")
         .add_attribute("sender", info.sender))
+}
+
+// Helper function to deserialize state
+fn from_slice<T: serde::de::DeserializeOwned>(data: &[u8]) -> StdResult<T> {
+    cosmwasm_std::from_slice(data).map_err(|_| StdError::parse_err("State", "Failed to deserialize state"))
 }

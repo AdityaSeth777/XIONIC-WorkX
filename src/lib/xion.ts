@@ -58,3 +58,38 @@ export async function initializeKeplr() {
   await window.keplr.enable(XION_CHAIN_ID);
   return window.keplr;
 }
+
+export async function sendXionPayment(
+  recipientAddress: string,
+  amount: string,
+  memo: string
+): Promise<void> {
+  try {
+    const keplr = await initializeKeplr();
+    const offlineSigner = keplr.getOfflineSigner(XION_CHAIN_ID);
+    const accounts = await offlineSigner.getAccounts();
+    const sender = accounts[0].address;
+
+    const client = await SigningCosmWasmClient.connectWithSigner(
+      XION_RPC,
+      offlineSigner
+    );
+
+    // Convert XION to uxion (1 XION = 1,000,000 uxion)
+    const amountInUxion = Math.floor(parseFloat(amount) * 1_000_000).toString();
+
+    await client.sendTokens(
+      sender,
+      recipientAddress,
+      [{ denom: "uxion", amount: amountInUxion }],
+      {
+        amount: [{ denom: "uxion", amount: "5000" }], // Standard gas fee
+        gas: "200000",
+      },
+      memo
+    );
+  } catch (error) {
+    console.error("Payment failed:", error);
+    throw error;
+  }
+}

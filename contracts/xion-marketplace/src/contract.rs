@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
     BankMsg, coins,
 };
 
@@ -43,7 +43,7 @@ pub fn execute(
 
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetState {} => to_binary(&query_state(deps)?),
+        QueryMsg::GetState {} => to_json_binary(&query_state(deps)?),
     }
 }
 
