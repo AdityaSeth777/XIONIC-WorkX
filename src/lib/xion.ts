@@ -6,7 +6,7 @@ declare global {
 }
 
 const XION_CHAIN_ID = "xion-testnet-1";
-const XION_RPC = "https://rpc.testnet.xion.network";
+const XION_RPC = "https://testnet-rpc.xion-api.burnt.com";
 
 export async function initializeKeplr() {
   if (!window.keplr) {
@@ -17,7 +17,7 @@ export async function initializeKeplr() {
     chainId: XION_CHAIN_ID,
     chainName: "XION Testnet",
     rpc: XION_RPC,
-    rest: "https://api.testnet.xion.network",
+    rest: "https://testnet-api.xion-api.burnt.com",
     bip44: {
       coinType: 118,
     },
@@ -57,50 +57,4 @@ export async function initializeKeplr() {
 
   await window.keplr.enable(XION_CHAIN_ID);
   return window.keplr;
-}
-
-export async function getXionClient(): Promise<SigningCosmWasmClient> {
-  const keplr = await initializeKeplr();
-  const offlineSigner = keplr.getOfflineSigner(XION_CHAIN_ID);
-  return SigningCosmWasmClient.connectWithSigner(XION_RPC, offlineSigner);
-}
-
-export async function sendXionPayment(to: string, amount: string, memo: string = '') {
-  try {
-    const client = await getXionClient();
-    const keplr = await initializeKeplr();
-    const accounts = await keplr.getOfflineSigner(XION_CHAIN_ID).getAccounts();
-    const sender = accounts[0].address;
-    
-    const amountInUxion = (parseFloat(amount) * 1000000).toString(); // Convert XION to uxion
-    
-    const tx = await client.sendTokens(
-      sender,
-      to,
-      [{ denom: "uxion", amount: amountInUxion }],
-      {
-        amount: [{ denom: "uxion", amount: "5000" }],
-        gas: "200000",
-      },
-      memo
-    );
-
-    return tx;
-  } catch (error) {
-    console.error('Error sending XION payment:', error);
-    throw error;
-  }
-}
-
-export async function createMetaAccount(name: string) {
-  try {
-    const client = await getXionClient();
-    // Here we would interact with XION's meta accounts module
-    // This is a placeholder until the exact contract address and message structure is known
-    console.log('Creating meta account:', name, client);
-    return null;
-  } catch (error) {
-    console.error('Error creating meta account:', error);
-    throw error;
-  }
 }
