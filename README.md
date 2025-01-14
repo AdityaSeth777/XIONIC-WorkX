@@ -2,23 +2,82 @@
 
 A decentralized marketplace for freelancers and clients built on XION Network.
 
-## Prerequisites
+## Setup Instructions
 
-1. Install Keplr Wallet:
-   - Install the [Keplr browser extension](https://www.keplr.app/)
-   - Create a new wallet or import existing one
-   - Keep your seed phrase safe!
+1. **Clone and Install Dependencies**
+   ```bash
+   git clone https://github.com/AdityaSeth777/XIONary
+   cd XIONary
+   npm install
+   ```
 
-2. Get XION Testnet Tokens:
-   - Visit the [XION Faucet](https://faucet.testnet.burnt.com)
-   - Enter your Keplr wallet address
-   - Receive test XION tokens
+2. **Environment Configuration**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_key
+
+   # XION Network Configuration
+   VITE_XION_CHAIN_ID=xion-testnet-1
+   VITE_XION_RPC_URL=https://testnet-rpc.xion-api.burnt.com:443
+   VITE_XION_REST_URL=https://testnet-api.xion-api.burnt.com
+   VITE_XION_TREASURY_CONTRACT=your_treasury_contract_address
+   ```
+
+3. **Supabase Setup**
+   - Create a new Supabase project
+   - Create the profiles table:
+   ```sql
+   create table profiles (
+     id uuid references auth.users on delete cascade,
+     username text,
+     avatar_url text,
+     reputation_score float default 0,
+     completed_projects int default 0,
+     active_projects int default 0,
+     total_earnings float default 0,
+     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+     primary key (id)
+   );
+
+   -- Enable RLS
+   alter table profiles enable row level security;
+
+   -- Create policies
+   create policy "Public profiles are viewable by everyone"
+     on profiles for select
+     using ( true );
+
+   create policy "Users can insert their own profile"
+     on profiles for insert
+     with check ( auth.uid() = id );
+
+   create policy "Users can update own profile"
+     on profiles for update
+     using ( auth.uid() = id );
+   ```
+
+4. **Configure Supabase Authentication**
+   - Go to Authentication settings in Supabase dashboard
+   - Enable Email OTP (magic link) provider
+   - Set up email templates for authentication
+   - Add your site URL to the allowed redirect URLs
+
+5. **XION Network Integration**
+   - The project uses Abstraxion for XION Meta account integration
+   - Treasury contract is pre-configured for handling payments
+   - Make sure to deploy the treasury contract and update the contract address in `.env`
+
+6. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
 
 ## Smart Contract Deployment
 
 1. Install Rust and required tools:
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs
 rustup target add wasm32-unknown-unknown
 cargo install cargo-generate
 ```
@@ -32,7 +91,7 @@ cargo build --target wasm32-unknown-unknown --release
 3. Set up XION CLI and deploy:
 ```bash
 # Install XION CLI
-curl -L https://raw.githubusercontent.com/burnt-labs/xion/main/scripts/install.sh | bash
+curl -L https://raw.githubusercontent.com/burnt-labs/xion/main/scripts/install.sh
 
 # Configure CLI for testnet
 xiond config chain-id xion-testnet-1
@@ -53,104 +112,112 @@ xiond tx wasm store ./target/wasm32-unknown-unknown/release/xion_marketplace.was
   -y
 ```
 
-## Development Setup
+## Features
 
-1. Install dependencies:
-```bash
-npm install
-```
+- **Authentication**
+  - Email-based authentication with magic links
+  - XION Meta account integration
+  - Profile management
 
-2. Set up environment variables:
-Create a `.env` file with:
-```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
-```
+- **Project Management**
+  - Create and browse projects
+  - Apply to projects
+  - Track project status
 
-3. Run development server:
-```bash
-npm run dev
-```
+- **Treasury System**
+  - Smart contract-based treasury
+  - Secure payment handling
+  - Automatic fund distribution
 
-## Using the Application
+- **User Profiles**
+  - Reputation system
+  - Project history
+  - Earnings tracking
 
-1. Connect Keplr Wallet:
-   - Click "Connect Wallet" in the top right
-   - Approve the connection in Keplr
-   - Your XION balance will be displayed
+## Smart Contract Integration
 
-2. Create a Project:
-   - Click "Create Project"
-   - Fill in project details
-   - Submit with connected wallet
+The project uses the following XION Network features:
 
-3. Apply for Projects:
-   - Browse available projects
-   - Click "Apply & Pay" on interesting projects
-   - Confirm transaction in Keplr
+1. **Treasury Contract**
+   - Handles secure fund management
+   - Methods:
+     - `initialize()`
+     - `deposit()`
+     - `withdraw(amount)`
+     - `getBalance()`
 
-4. Smart Contract Features:
-   - Escrow system for secure payments
-   - Work completion verification
-   - Payment release mechanism
-   - Dispute resolution system
+2. **XION Meta Integration**
+   - Social login support
+   - Transaction signing
+   - Account management
 
-## Smart Contract Architecture
+## Development Guidelines
 
-### Escrow Contract
+1. **Code Structure**
+   - React components in `src/components`
+   - Pages in `src/pages`
+   - Context providers in `src/context`
+   - Utility functions in `src/lib`
 
-The main escrow contract (`contracts/xion-marketplace/src/escrow.rs`) handles:
+2. **Styling**
+   - Tailwind CSS for styling
+   - Custom components in `src/components`
+   - Responsive design patterns
 
-1. Project Creation:
-   - Client deposits funds
-   - Freelancer is assigned
-   - Payment amount is locked
+3. **State Management**
+   - React Context for global state
+   - Supabase for data persistence
+   - Smart contract state for blockchain data
 
-2. Work Flow:
-   - Freelancer marks work as complete
-   - Client reviews and releases payment
-   - Disputes can be raised by either party
+## Deployment
 
-3. Payment Release:
-   - Automatic transfer to freelancer
-   - Gas fees handled by contract
+1. **Build the Application**
+   ```bash
+   npm run build
+   ```
 
-Example usage:
+2. **Deploy to Production**
+   - Deploy the built files from `dist` directory
+   - Update environment variables in production
+   - Configure Supabase production settings
 
-```rust
-// Create new escrow
-let msg = InstantiateMsg {
-    client: "xion1...".to_string(),
-    freelancer: "xion1...".to_string(),
-    amount: Uint128::new(1000000), // 1 XION
-};
+## Security Considerations
 
-// Mark work complete
-let complete_msg = ExecuteMsg::CompleteWork {};
+1. **Authentication**
+   - Email verification required
+   - Secure session management
+   - Protected API routes
 
-// Release payment
-let release_msg = ExecuteMsg::ReleasePayment {};
-```
+2. **Smart Contract**
+   - Audited treasury contract
+   - Secure fund management
+   - Access control implementation
 
-## Security Features
-
-- Row Level Security in Supabase
-- Smart contract access controls
-- Secure wallet integration
-- Escrow-based payments
-- Dispute resolution mechanism
-
-## Network Configuration
-
-The application connects to XION Testnet with these endpoints:
-- RPC: https://testnet-rpc.xion-api.burnt.com:443
-- REST: https://testnet-api.xion-api.burnt.com
-- Chain ID: xion-testnet-1
+3. **Data Privacy**
+   - Row Level Security in Supabase
+   - Encrypted data transmission
+   - Limited data exposure
 
 ## Troubleshooting
 
-If you encounter connection issues:
-1. Ensure you're using the correct RPC endpoint with port 443
-2. Check that your key is properly imported and has funds
-3. Verify the chain-id matches the testnet
-4. Make sure the gas prices are set correctly
+1. **Common Issues**
+   - If magic link fails, check Supabase email settings
+   - For treasury errors, verify contract address
+   - Network issues: check XION RPC endpoint status
+
+2. **Support**
+   - Check issues in GitHub repository
+   - Contact support team
+   - Review documentation
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+MIT License - see LICENSE file for details
