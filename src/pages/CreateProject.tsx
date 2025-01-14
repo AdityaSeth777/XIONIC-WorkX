@@ -2,24 +2,24 @@ import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useWallet } from '../context/WalletContext';
+import { useAuth } from '../context/WalletContext';
 
 export function CreateProject() {
   const navigate = useNavigate();
-  const { wallet } = useWallet();
+  const { auth } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     budget: '',
     duration: '',
-    tags: ['Smart Contracts', 'React'] // Default tags, could be made dynamic
+    tags: ['Smart Contracts', 'React']
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!wallet.address) {
-      alert('Please connect your wallet first');
+    if (!auth.user) {
+      alert('Please sign in first');
       return;
     }
 
@@ -33,7 +33,7 @@ export function CreateProject() {
             description: formData.description,
             budget: parseFloat(formData.budget),
             duration: parseInt(formData.duration),
-            client_address: wallet.address,
+            client_id: auth.user.id,
             tags: formData.tags,
             status: 'open'
           }
@@ -128,15 +128,15 @@ export function CreateProject() {
         <button
           type="submit"
           className="w-full btn btn-primary flex items-center justify-center gap-2"
-          disabled={isSubmitting || !wallet.address}
+          disabled={isSubmitting || !auth.user}
         >
           <Send className="w-5 h-5" />
           {isSubmitting ? 'Creating...' : 'Post Project'}
         </button>
 
-        {!wallet.address && (
+        {!auth.user && (
           <p className="text-yellow-400 text-sm text-center">
-            Please connect your wallet to create a project
+            Please sign in to create a project
           </p>
         )}
       </form>

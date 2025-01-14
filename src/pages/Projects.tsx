@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Search, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useWallet } from '../context/WalletContext';
+import { useAuth } from '../context/WalletContext';
 import { PaymentModal } from '../components/PaymentModal';
 import type { Project } from '../lib/types';
 
@@ -10,7 +10,7 @@ export function Projects() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const { wallet } = useWallet();
+  const { auth } = useAuth();
 
   useEffect(() => {
     loadProjects();
@@ -34,8 +34,8 @@ export function Projects() {
   };
 
   const handleApply = (project: Project) => {
-    if (!wallet.address) {
-      alert('Please connect your wallet first');
+    if (!auth.user) {
+      alert('Please sign in first');
       return;
     }
     setSelectedProject(project);
@@ -87,13 +87,13 @@ export function Projects() {
               <div className="text-right">
                 <div className="text-xl font-bold text-blue-400">{project.budget} XION</div>
                 <div className="text-sm text-gray-400">Est. {project.duration} days</div>
-                {project.status === 'open' && wallet.address && wallet.address !== project.client_address && (
+                {project.status === 'open' && auth.user && auth.user.id !== project.client_id && (
                   <button
                     onClick={() => handleApply(project)}
                     className="btn btn-primary mt-4 flex items-center gap-2"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Apply & Pay
+                    Apply
                   </button>
                 )}
               </div>
@@ -112,7 +112,7 @@ export function Projects() {
         <PaymentModal
           isOpen={true}
           onClose={() => setSelectedProject(null)}
-          recipientAddress={selectedProject.client_address}
+          recipientAddress={selectedProject.client_id}
           amount={selectedProject.budget.toString()}
           projectTitle={selectedProject.title}
         />

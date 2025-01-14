@@ -5,7 +5,7 @@ import { Home } from './pages/Home';
 import { Projects } from './pages/Projects';
 import { CreateProject } from './pages/CreateProject';
 import { Profile } from './pages/Profile';
-import { WalletProvider } from './context/WalletContext';
+import { AuthProvider } from './context/WalletContext';
 import { CustomCursor } from './components/CustomCursor';
 import { Preloader } from './components/Preloader';
 
@@ -13,7 +13,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading time
     const timer = setTimeout(() => {
       setLoading(false);
     }, 2000);
@@ -26,7 +25,7 @@ export default function App() {
   }
 
   return (
-    <WalletProvider>
+    <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-900 text-white">
           <CustomCursor />
@@ -41,6 +40,6 @@ export default function App() {
           </main>
         </div>
       </Router>
-    </WalletProvider>
+    </AuthProvider>
   );
 }
